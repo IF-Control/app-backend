@@ -1,0 +1,103 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User{
+  id String @id @default(uuid())
+  enrollment String?
+  email String @unique
+  name String
+  password String
+
+  type String
+  active Boolean @default(true)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+
+  campus Campus @relation(fields: [campus_id], references: [id])
+
+  @@map("users")
+  campus_id String
+
+  movements Movement[]
+}
+
+model Campus{
+  id String @id @default(uuid())
+  name String
+  state String
+  city String
+  map_uri String
+
+  created_at DateTime? @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+
+  @@map("campuses")
+  users User[]
+  buildings Building[]
+}
+
+model Building{
+  id String @id @default(uuid())
+  name String
+
+  created_at DateTime? @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+
+  campus Campus @relation(fields: [campus_id], references: [id])
+
+  @@map("buildings")
+  campus_id String
+  rooms Room[]
+}
+
+model Room{
+  id String @id @default(uuid())
+  name String
+  capacity Int
+
+  latitude String
+  longitude String
+  altitude String
+
+  created_at DateTime? @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+
+  type String
+  status String
+
+  building Building @relation(fields: [building_id], references: [id])
+
+  @@map("rooms")
+  building_id String
+
+  movements Movement[]
+}
+
+model Movement{
+  id String @id @default(uuid())
+  checkin_date String?
+  checkout_date String?
+
+  draft Boolean @default(true)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime @default(now())
+
+  room Room @relation(fields: [room_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("movements")
+  room_id String
+  user_id String
+}
