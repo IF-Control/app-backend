@@ -1,17 +1,23 @@
-import prismaClient from "../../prisma";
+import { Services } from "../Services";
 
 interface CheckoutRequest{
     user_id: string;
     movement_id: string;
     room_id: string;
-    confirm: boolean | undefined;
 }
 
-class CheckoutService{
-    async execute({ user_id, movement_id, room_id, confirm }: CheckoutRequest){
+class CheckoutService extends Services{
+    async execute({ user_id, movement_id, room_id }: CheckoutRequest){
+        user_id = this.validate.sanitizeField(user_id);
+        movement_id = this.validate.sanitizeField(movement_id);
+        room_id = this.validate.sanitizeField(room_id);
 
-        const movementExists = await prismaClient.movement.findFirst({
-            where:{
+        if(!user_id || !movement_id || !room_id){
+            throw new Error("Campos faltantes na requisição.");
+        }
+
+        const movementExists = await this.prisma.movement.findFirst({
+            where: {
                 id: movement_id,
                 user_id: user_id,
                 room_id: room_id,
@@ -20,39 +26,20 @@ class CheckoutService{
         });
 
         if(!movementExists){
-            throw new Error("Ação inválida");
+            throw new Error("Ação inválida - Movimento é inexistente.");
         }
 
-        if(confirm){
-            const movement = await prismaClient.movement.update({
-                data:{
-                    draft: false
-                },
-                where:{
-                    id: movement_id
-                },
-                select:{
-                    id: true,
-                    checkin_date: true,
-                    checkout_date: true,
-                    room_id: true,
-                    user_id: true,
-                    draft: true
-                }
-            });
-            return movement;
-        }else{
+        try{
             const checkOutDate = new Date().toLocaleString("pt-BR");
-    
-            const movement = await prismaClient.movement.update({
-                data:{
+            const movement = await this.prisma.movement.update({
+                data: {
                     checkout_date: checkOutDate, 
                     draft: false
                 },
-                where:{
+                where: {
                     id: movement_id
                 },
-                select:{
+                select: {
                     id: true,
                     checkin_date: true,
                     checkout_date: true,
@@ -61,7 +48,10 @@ class CheckoutService{
                     draft: true
                 }
             });
+            
             return movement;
+        }catch(error){
+            throw new Error("Não foi possível realizar o check-out.");
         }
     }
 }

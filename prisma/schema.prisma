@@ -16,8 +16,11 @@ model User{
 
   type String
   active Boolean @default(true)
+  vaccine_doses Int? 
+  course String?
+  group_of_risk Boolean
 
-  created_at DateTime? @default(now())
+  created_at DateTime @default(now())
   updated_at DateTime @default(now())
   deleted_at DateTime?
 
@@ -27,6 +30,8 @@ model User{
   campus_id String
 
   movements Movement[]
+  alerts Alert[]
+  disease_contaminations DiseaseContamination[]
 }
 
 model Campus{
@@ -34,9 +39,9 @@ model Campus{
   name String
   state String
   city String
-  map_uri String
+  map_uri String?
 
-  created_at DateTime? @default(now())
+  created_at DateTime @default(now())
   updated_at DateTime @default(now())
   deleted_at DateTime?
 
@@ -49,7 +54,7 @@ model Building{
   id String @id @default(uuid())
   name String
 
-  created_at DateTime? @default(now())
+  created_at DateTime @default(now())
   updated_at DateTime @default(now())
   deleted_at DateTime?
 
@@ -65,11 +70,11 @@ model Room{
   name String
   capacity Int
 
-  latitude String
-  longitude String
-  altitude String
+  latitude String?
+  longitude String?
+  altitude String?
 
-  created_at DateTime? @default(now())
+  created_at DateTime @default(now())
   updated_at DateTime @default(now())
   deleted_at DateTime?
 
@@ -91,7 +96,7 @@ model Movement{
 
   draft Boolean @default(true)
 
-  created_at DateTime? @default(now())
+  created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
   room Room @relation(fields: [room_id], references: [id])
@@ -100,4 +105,53 @@ model Movement{
   @@map("movements")
   room_id String
   user_id String
+
+  alerts Alert[]
+}
+
+model HealthTip{
+  id String @id @default(uuid())
+  name String
+  description String
+  image String @unique
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime?
+
+  @@map("health_tips")
+}
+
+model DiseaseContamination{
+  id String @id @default(uuid()) @unique
+  disease String
+  report String
+  contamination_date String?
+  symptomatic Boolean?
+  case_type String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@map("disease_contaminations")
+
+  user User @relation(fields: [user_id], references: [id])
+  user_id String
+}
+
+model Alert{
+  id String @id @default(uuid()) @unique
+  message_type String
+  date String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+  movement Movement @relation(fields: [movement_id], references: [id])
+
+  @@map("alerts")
+
+  user_id String
+  movement_id String
 }

@@ -1,24 +1,34 @@
-import prismaClient from "../../prisma";
+import { Services } from "../Services";
 
-
-class DetailUserService{
+class DetailUserService extends Services{
     async execute(user_id: string){
+        user_id = this.validate.sanitizeField(user_id);
 
-        const user = await prismaClient.user.findFirst({
-            where:{
-                id: user_id,
-                active: true
-            },
-            select:{
-                id: true,
-                name: true,
-                email: true,
-                enrollment: true,
-                type: true
-            }
-        });
+        if(!user_id){
+            throw new Error("Identificador do usuário solicitante está faltando na requisição.");
+        }
 
-        return user;
+        try{
+            const user = await this.prisma.user.findFirst({
+                where: {
+                    id: user_id,
+                    active: true,
+                    deleted_at: null
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    enrollment: true,
+                    type: true,
+                    vaccine_doses: true
+                }
+            });
+    
+            return user;
+        }catch(error){
+            throw new Error("Não foi possível localizar este usuário.");
+        }
     }
 }
 

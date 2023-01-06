@@ -7,9 +7,8 @@ class ListUserCampusRoomsController{
         const [, authToken ] = (req.headers.authorization).split(" ");
         const token = decode(authToken);
         const campusId = token['campus'];
-
         const listUserCampusRoomsService = new ListUserCampusRoomsService();
-        const room = await listUserCampusRoomsService.execute(campusId);
+        const room = await listUserCampusRoomsService.execute({ campusId });
         return res.json(room);
     }
 }

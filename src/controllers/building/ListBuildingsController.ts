@@ -8,7 +8,6 @@ class ListBuildingsController{
         const token = decode(authToken);
 
         const listBuildingsService = new ListBuildingsService;
-
         const buildings = await listBuildingsService.execute(token['campus']);
 
         return res.json(buildings);

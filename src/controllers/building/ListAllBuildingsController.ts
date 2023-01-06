@@ -4,9 +4,7 @@ import { ListAllBuildingsService } from "../../services/building/ListAllBuilding
 class ListAllBuildingsController{
     async handle(req: Request, res: Response){
         const listAllBuildingsService = new ListAllBuildingsService;
-
         const buildings = await listAllBuildingsService.execute();
-
         return res.json(buildings);
     }
 }
